@@ -1,0 +1,292 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-cyan: var(--cyan);
+  --color-blue: var(--blue);
+  --color-violet: var(--violet);
+  --color-success: var(--success);
+  --color-warn: var(--warn);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --font-display: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Figtree", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+:root {
+  --radius: 0.5rem;
+  --background: oklch(0.18 0.012 155);
+  --foreground: oklch(0.97 0.008 120);
+  --surface: oklch(0.235 0.016 155);
+  --surface-2: oklch(0.28 0.019 155);
+  --card: oklch(0.235 0.016 155);
+  --card-foreground: oklch(0.97 0.005 250);
+  --popover: oklch(0.215 0.024 265);
+  --popover-foreground: oklch(0.97 0.005 250);
+  --primary: oklch(0.82 0.18 145);
+  --primary-foreground: oklch(0.18 0.012 155);
+  --secondary: oklch(0.28 0.019 155);
+  --secondary-foreground: oklch(0.97 0.005 250);
+  --muted: oklch(0.28 0.019 155);
+  --muted-foreground: oklch(0.73 0.025 145);
+  --accent: oklch(0.31 0.04 150);
+  --accent-foreground: oklch(0.97 0.005 250);
+  --destructive: oklch(0.62 0.21 25);
+  --destructive-foreground: oklch(0.97 0.005 250);
+  --border: oklch(0.34 0.022 155);
+  --input: oklch(0.34 0.022 155);
+  --ring: oklch(0.82 0.18 145);
+  --cyan: oklch(0.82 0.18 145);
+  --blue: oklch(0.76 0.15 155);
+  --violet: oklch(0.79 0.14 115);
+  --success: oklch(0.82 0.18 145);
+  --warn: oklch(0.82 0.15 80);
+  --gradient-brand: linear-gradient(100deg, var(--primary), var(--success));
+  --shadow-glow: 0 18px 50px -18px color-mix(in oklab, var(--blue) 65%, transparent);
+  --shadow-card: 0 10px 30px -18px oklch(0 0 0 / 0.8);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection {
+    background: color-mix(in oklab, var(--blue) 40%, transparent);
+  }
+
+  :where(a, button, summary, input, textarea, select, [tabindex]):focus-visible {
+    outline: 3px solid var(--cyan);
+    outline-offset: 3px;
+    border-radius: 0.5rem;
+  }
+
+  :where(section, div, nav)[tabindex="-1"]:focus-visible {
+    outline: 3px dashed var(--cyan);
+    outline-offset: 6px;
+  }
+}
+
+@utility text-gradient {
+  background-image: var(--gradient-brand);
+  background-clip: text;
+  color: transparent;
+}
+
+@utility bg-brand {
+  background-image: var(--gradient-brand);
+}
+
+@utility glow {
+  box-shadow: var(--shadow-glow);
+}
+
+@utility card-soft {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+  transition:
+    transform 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+    border-color: color-mix(in oklab, var(--blue) 45%, var(--border));
+    box-shadow: 0 22px 45px -25px color-mix(in oklab, var(--blue) 70%, transparent);
+  }
+}
+
+@utility grid-bg {
+  background-image:
+    radial-gradient(
+      ellipse 70% 55% at 50% -10%,
+      color-mix(in oklab, var(--blue) 22%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(circle at 1px 1px, oklch(1 0 0 / 0.05) 1px, transparent 0);
+  background-size:
+    100% 100%,
+    28px 28px;
+}
+
+/* Leitura acessível das aulas */
+.leitura {
+  font-size: calc(1rem * var(--leitura-escala, 1));
+}
+
+.leitura :where(p, li, code, pre, h1, h2, h3, span, button, textarea, input) {
+  font-size: inherit;
+  line-height: calc(1.6 * var(--leitura-altura, 1));
+}
+
+.leitura-contraste {
+  --muted-foreground: oklch(0.96 0.005 250);
+  --border: oklch(0.62 0.03 265);
+  --surface: oklch(0.12 0.02 265);
+  --surface-2: oklch(0.16 0.02 265);
+  --card: oklch(0.12 0.02 265);
+}
+
+.leitura-quebra :where(p, li, code, pre, .font-mono) {
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.impressao {
+  display: none;
+}
+
+@media print {
+  @page {
+    margin: 18mm 16mm 20mm;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+    color: #111 !important;
+    font-size: 11.5pt;
+  }
+
+  header,
+  iframe,
+  textarea,
+  nav,
+  .nao-imprimir {
+    display: none !important;
+  }
+
+  .impressao {
+    display: block !important;
+    color: #111;
+  }
+
+  .impressao * {
+    color: #111 !important;
+    border-color: #999 !important;
+    background: transparent !important;
+  }
+
+  .impressao h1 {
+    font-size: 20pt;
+    margin: 0 0 4mm;
+  }
+
+  .impressao h2 {
+    font-size: 14pt;
+    margin: 8mm 0 3mm;
+    padding-bottom: 1.5mm;
+    border-bottom: 1px solid #999;
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  .impressao h3 {
+    font-size: 12pt;
+    margin: 5mm 0 2mm;
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  .impressao p,
+  .impressao li {
+    line-height: 1.55;
+    orphans: 3;
+    widows: 3;
+  }
+
+  .impressao section,
+  .impressao li,
+  .impressao pre,
+  .impressao table {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .impressao .quebra-pagina {
+    break-before: page;
+    page-break-before: always;
+  }
+
+  .impressao pre {
+    background: #f3f3f3 !important;
+    white-space: pre-wrap;
+    word-break: break-word;
+    padding: 3mm;
+    border: 1px solid #ccc;
+    border-radius: 2mm;
+    font-size: 9.5pt;
+  }
+
+  .impressao table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10pt;
+  }
+
+  .impressao th,
+  .impressao td {
+    border: 1px solid #999;
+    padding: 2mm;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .impressao .rodape-impressao {
+    margin-top: 8mm;
+    border-top: 1px solid #999;
+    padding-top: 2mm;
+    font-size: 9pt;
+  }
+
+  body:has(.impressao) main {
+    display: none !important;
+  }
+
+  .certificado {
+    border: 3px solid #111 !important;
+    padding: 18mm !important;
+  }
+}
+
+
