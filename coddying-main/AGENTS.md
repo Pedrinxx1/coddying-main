@@ -11,6 +11,14 @@
 
 ## Build & Lint
 
-- **Typecheck:** `npx tsc --noEmit`
-- **Lint:** `npm run lint`
-- **Build:** `npm run build`
+- **Typecheck:** `npx tsc --noEmit` (or `bun run tsc --noEmit`)
+- **Lint:** `npm run lint` (or `bun run lint`)
+- **Build:** `npm run build` (or `bun run build`)
+
+## Environment Variables
+
+- `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` — Client-side Supabase config
+- `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY` — Server-side Supabase config
+- `SUPABASE_SERVICE_ROLE_KEY` — Supabase admin (server-side only, `src/integrations/supabase/client.server.ts`)
+- `GEMINI_API_KEY` — Gemini API key for AI tutor (server-side only)
+- `ANTHROPIC_API_KEY` — Claude API key for AI tutor (server-side only, tried first)

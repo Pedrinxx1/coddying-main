@@ -38,6 +38,20 @@ function AuthPage() {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ type: "err" | "ok"; text: string } | null>(null);
 
+  const PREVIEW_ZONES = ["lovableproject.com", "lovableproject-dev.com", "lovable.app", "gpt-eng.com", "gptengineer.run"];
+  const isLovablePreview = typeof window !== "undefined" && PREVIEW_ZONES.some(
+    (z) => window.location.hostname === z || window.location.hostname.endsWith("." + z),
+  );
+
+  useEffect(() => {
+    if (isLovablePreview) return;
+    const search = new URLSearchParams(window.location.search);
+    const code = search.get("code");
+    if (code) {
+      supabase.auth.exchangeCodeForSession(code).catch(() => {});
+    }
+  }, [isLovablePreview]);
+
   useEffect(() => setMode(modo ?? "login"), [modo]);
 
   useEffect(() => {
@@ -82,16 +96,39 @@ function AuthPage() {
   async function google() {
     setBusy(true);
     setMsg(null);
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+
+    if (isLovablePreview) {
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: window.location.origin,
+      });
+      if (result.error) {
+        setBusy(false);
+        setMsg({ type: "err", text: "Não foi possível entrar com o Google. Tente novamente." });
+        return;
+      }
+      if (result.redirected) return;
+      setBusy(false);
+      navigate({ to: "/painel", replace: true });
+      return;
+    }
+
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: window.location.origin,
+      },
     });
-    if (result.error) {
+    if (error) {
       setBusy(false);
       setMsg({ type: "err", text: "Não foi possível entrar com o Google. Tente novamente." });
       return;
     }
-    if (result.redirected) return;
-    navigate({ to: "/painel", replace: true });
+    setBusy(false);
+    if (data?.url) {
+      window.location.href = data.url;
+    } else {
+      setMsg({ type: "err", text: "Não foi possível iniciar a autenticação. Tente novamente." });
+    }
   }
 
   return (

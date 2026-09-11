@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { History, Loader2, Play, RotateCcw, Save, Terminal, Trash2 } from "lucide-react";
+import { History, Loader2, Play, RotateCcw, Save, Terminal, Trash2, Copy, ChevronDown, ChevronUp } from "lucide-react";
 import { listRuntimes, runCode, type RunResult } from "@/lib/run-code.functions";
 import { diffLinhas, resumoDiff } from "@/lib/diff";
 import { SiteHeader } from "@/components/SiteHeader";
@@ -224,6 +224,7 @@ function Playground() {
   const [code, setCode] = useState(initial.sample);
   const [filename, setFilename] = useState(`main.${initial.ext}`);
   const [stdin, setStdin] = useState("");
+  const [showStdin, setShowStdin] = useState(false);
   const [customLang, setCustomLang] = useState("");
   const [result, setResult] = useState<RunResult | null>(null);
   const [running, setRunning] = useState(false);
@@ -433,7 +434,7 @@ function Playground() {
           ))}
         </div>
 
-        <div className="mt-4 grid gap-3 sm:grid-cols-3">
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
           <label className="flex flex-col gap-1 text-xs text-muted-foreground">
             Nome do arquivo (qualquer extensão)
             <input
@@ -458,16 +459,35 @@ function Playground() {
               ))}
             </datalist>
           </label>
-          <label className="flex flex-col gap-1 text-xs text-muted-foreground">
-            Entrada (stdin)
-            <input
+        </div>
+
+        <button
+          onClick={() => setShowStdin(!showStdin)}
+          className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground"
+        >
+          {showStdin ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+          Entrada (stdin) — para programas que leem input
+          {showStdin && stdin && (
+            <button
+              onClick={() => setStdin("")}
+              className="ml-1 rounded p-0.5 hover:bg-muted"
+              aria-label="Limpar entrada"
+            >
+              <Trash2 className="h-3 w-3" />
+            </button>
+          )}
+        </button>
+        {showStdin && (
+          <div className="mt-2">
+            <textarea
               value={stdin}
               onChange={(e) => setStdin(e.target.value)}
-              className="rounded-xl border border-border bg-surface px-3 py-2 font-mono text-sm text-foreground outline-none focus:border-cyan"
-              placeholder="texto enviado ao programa"
+              placeholder="Digite os valores de entrada aqui (um por linha). Será enviado como stdin ao programa."
+              className="w-full rounded-xl border border-border bg-surface/60 px-3 py-2 font-mono text-sm text-foreground outline-none focus:border-cyan"
+              rows={Math.max(2, stdin.split("\n").length)}
             />
-          </label>
-        </div>
+          </div>
+        )}
 
         <div className="mt-5 grid gap-5 lg:grid-cols-2">
           <div className="card-soft overflow-hidden p-0">
@@ -534,9 +554,42 @@ function Playground() {
           </div>
 
           <div className="card-soft overflow-hidden p-0">
-            <div className="flex items-center gap-2 border-b border-border px-4 py-2.5">
-              <Terminal className="h-4 w-4 text-cyan" />
-              <span className="text-xs font-semibold">{isWeb ? "Pré-visualização" : "Saída"}</span>
+            <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
+              <div className="flex items-center gap-2">
+                <Terminal className="h-4 w-4 text-cyan" />
+                <span className="text-xs font-semibold">
+                  {isWeb ? "Pré-visualização" : "Terminal"}
+                </span>
+                {result?.status && (
+                  <span className="rounded border border-border px-2 py-0.5 text-xs text-muted-foreground">
+                    {result.status}
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                {result && !running && !isWeb && (
+                  <>
+                    <button
+                      onClick={() => {
+                        if (result?.output) {
+                          navigator.clipboard.writeText(result.output).catch(() => {});
+                        }
+                      }}
+                      className="rounded-lg border border-border p-1.5 text-xs text-muted-foreground hover:text-foreground"
+                      aria-label="Copiar saída"
+                    >
+                      <Copy className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      onClick={() => setResult(null)}
+                      className="rounded-lg border border-border p-1.5 text-xs text-muted-foreground hover:text-destructive"
+                      aria-label="Limpar terminal"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
             {isWeb ? (
               <iframe
@@ -546,27 +599,38 @@ function Playground() {
                 className="h-[60vh] min-h-[280px] w-full bg-white"
               />
             ) : (
-              <div className="max-h-[60vh] min-h-[280px] overflow-auto px-4 py-3 sm:min-h-[380px]">
-                {running && <p className="text-sm text-muted-foreground">Executando…</p>}
+              <div className="relative max-h-[60vh] min-h-[280px] overflow-auto bg-[#0d1117] font-mono text-sm sm:min-h-[380px]">
+                {running && (
+                  <div className="px-4 py-3 text-muted-foreground">
+                    <span className="text-cyan">$</span> Executando…
+                  </div>
+                )}
                 {!running && !result && (
-                  <p className="text-sm text-muted-foreground">
-                    Clique em “Rodar” para executar seu código.
-                  </p>
+                  <div className="px-4 py-3 text-muted-foreground/50">
+                    <span className="text-cyan">$</span> Digite e clique em <span className="text-cyan">Rodar</span> (Ctrl/⌘ + Enter)
+                  </div>
                 )}
                 {result?.error && (
-                  <pre className="font-mono text-sm whitespace-pre-wrap text-destructive">
+                  <pre className="px-4 py-3 font-mono text-sm text-red-400 whitespace-pre-wrap">
                     {result.error}
                   </pre>
                 )}
                 {result && !result.error && (
                   <>
-                    <pre className="font-mono text-sm whitespace-pre-wrap text-foreground">
-                      {result.output}
-                    </pre>
+                    {result.output && (
+                      <pre className="px-4 py-3 text-green-400 whitespace-pre-wrap">
+                        {result.output}
+                      </pre>
+                    )}
                     {result.stderr && (
-                      <pre className="mt-3 font-mono text-sm whitespace-pre-wrap text-destructive">
+                      <pre className="px-4 py-2 text-sm text-orange-400 whitespace-pre-wrap">
                         {result.stderr}
                       </pre>
+                    )}
+                    {!result.output && !result.stderr && (
+                      <div className="px-4 py-3 text-muted-foreground/50">
+                        <span className="text-cyan">$</span> Programa finalizado sem saída.
+                      </div>
                     )}
                   </>
                 )}

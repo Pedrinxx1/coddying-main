@@ -2,6 +2,7 @@
 // A LLM sempre recebe o material da aula como única fonte — nada de informação inventada.
 
 import type { LessonContent } from "@/data/lessonContent";
+import { askClaude } from "./tutor.functions";
 import { askGemini } from "./tutor.functions";
 
 export type TutorAnswer = {
@@ -94,8 +95,9 @@ export function verificarResposta(texto: string, content: LessonContent) {
 }
 
 /**
- * Versão assíncrona do tutor: tenta primeiro a API Gemini (contextualizada com
- * o material da lição) e, se falhar, recorre à correspondência de palavras-chave.
+ * Versão assíncrona do tutor: tenta primeiro a API Claude (Anthropic), depois
+ * Gemini, e, se ambas falharem, recorre à correspondência de palavras-chave.
+ * O fallback de palavras-chave nunca inventa — responde só com o material da lição.
  */
 export async function askTutor(question: string, content: LessonContent, lessonTitle: string): Promise<TutorAnswer> {
   const contextSnippet = [
@@ -111,6 +113,21 @@ export async function askTutor(question: string, content: LessonContent, lessonT
 
   const fallback = responder(question, content, lessonTitle);
   const { verificado, cobertura } = verificarResposta(fallback.text, content);
+
+  try {
+    const { text, ok } = await askClaude({ prompt: question, context: contextSnippet });
+    if (ok && text) {
+      const { verificado: aiVerificado, cobertura: aiCobertura } = verificarResposta(text, content);
+      return {
+        text,
+        source: aiVerificado ? "Claude (baseado no material da lição)" : "Claude",
+        verificado: aiVerificado,
+        cobertura: aiCobertura,
+      };
+    }
+  } catch {
+    /* Claude indisponível — tenta Gemini */
+  }
 
   try {
     const { text, ok } = await askGemini({ prompt: question, context: contextSnippet });
